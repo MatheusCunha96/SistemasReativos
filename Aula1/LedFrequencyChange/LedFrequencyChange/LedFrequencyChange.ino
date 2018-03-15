@@ -24,9 +24,6 @@ int led = LED1;
 //ESTADO ATUAL DO LED
 int led_status = 0;
 
-//FLAG QUE INDICA SE O LED PODE PISCAR OU NAO
-int flag_timer = 0;
-
 //VARIAVEL QUE GUARDA O TEMPO DE TROCA DO ESTADO DO LED
 unsigned int timer = 1000;
 
@@ -40,11 +37,8 @@ unsigned int tempo_antigo = 1;
 
 void changeLed()
 {//FUNCAO RESPONSÁVEL POR TROCAR O ESTADO DO LED E ATIVAR O ESTADO ATUAL
- //SE A FLAG flag_timer ESTIVER ACESSA O LED NÃO IRÁ PISCAR
-  if(flag_timer == 0){
-    led_status = !led_status;
-    digitalWrite(led, led_status);
-  }
+  led_status = !led_status;
+  digitalWrite(led, led_status);
 }
 
 void changeFrequency(int key)
@@ -63,8 +57,8 @@ void changeFrequency(int key)
   if (((time_key_2 - time_key_1 < 500) || (time_key_1 - time_key_2 < 500)) && (time_key_1 != 0))
     {
       //CASO O INTERVALO ENTRE O ACIONAMENTO DOS DOIS BOTOES SEJA MENOR QUE 500ms DESLIGA O LED
-      flag_timer = 1;
       digitalWrite(LED1, HIGH);
+      while(1){};
     }
 }
 
