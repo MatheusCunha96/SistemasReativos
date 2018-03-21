@@ -23,16 +23,17 @@ unsigned int tempo_key2 = 0;                                 //VARIAVEL PARA GUA
 const byte SEGMENT_MAP[] = {0xC0,0xF9,0xA4,0xB0,0x99,0x92,0x82,0xF8,0X80,0X90};   //BYTE MAP PARA NUMEROS DE 0 A 9
 const byte SEGMENT_SELECT[] = {0xF1,0xF2,0xF4,0xF8};                              //BYTE MAP PARA SELECIONAR O DISPLAY
 
+volatile int count_timer = 0;
 /*************************************************************/
 /*********************FUNÇÕES********************************/
 /*************************************************************/
 
 void EscreveNumeroNoDisplay(byte Segment, byte Value)
 {
-digitalWrite(LATCH_DIO,LOW);
-shiftOut(DATA_DIO, CLK_DIO, MSBFIRST, SEGMENT_MAP[Value]);
-shiftOut(DATA_DIO, CLK_DIO, MSBFIRST, SEGMENT_SELECT[Segment] );
-digitalWrite(LATCH_DIO,HIGH);
+  digitalWrite(LATCH_DIO,LOW);
+  shiftOut(DATA_DIO, CLK_DIO, MSBFIRST, SEGMENT_MAP[Value]);
+  shiftOut(DATA_DIO, CLK_DIO, MSBFIRST, SEGMENT_SELECT[Segment] );
+  digitalWrite(LATCH_DIO,HIGH);
 }
 
 void buzzAviso()
@@ -123,7 +124,7 @@ void appinit(void)
   button_listen(KEY1);
   button_listen(KEY2);
   button_listen(KEY3);
-  timer_set(1000);
+  timer_set(10);
 
   relogio_principal = criarRelogio();  
 }
@@ -164,16 +165,34 @@ void button_changed(int p, int v)
   } 
 }
 
-void timer_expired_display(void)
+/*void timer_expired_display(void)
 {
   if(relogio_principal.tipo_funcao == 0)
     mostraRelogioDisplay(relogio_modificacao);
   else
     mostraRelogioDisplay(relogio_principal);
-}
+}*/
 
 void timer_expired(void)
 {//FUNCAO RESPONSÁVEL POR REALIZAR A AÇÃO QUANDO O TIMER EXPIRAR
+  count_timer++;
+
+  if(relogio_principal.tipo_funcao == 0)
+    mostraRelogioDisplay(relogio_modificacao);
+  else
+  {
+    if(count_timer >= 1)
+    {
+      digitalWrite(LED2,LOW);
+      relogio_principal = logicaRelogioSoma(relogio_principal); 
+      if(relogio_principal.minutos == 1)
+              digitalWrite(LED1,LOW);
+      count_timer = 0;
+    }
+    mostraRelogioDisplay(relogio_principal);
+  }
+    
+
   
-  relogio_principal = logicaRelogioSoma(relogio_principal); 
+  
 }
