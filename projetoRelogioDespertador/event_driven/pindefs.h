@@ -7,3 +7,7 @@
 #define KEY2       A2
 #define KEY3       A3
 #define POT        A0
+#define LATCH_DIO  4
+#define CLK_DIO    7
+#define DATA_DIO   8
+#define TEMPO_DISPLAY 25

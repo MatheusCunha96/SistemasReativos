@@ -24,10 +24,15 @@ int leds[3] = {LED1, LED2, LED3};
 //VARIAVEL QUE GUARDA O TEMPO DO TIMER
 static int timer = 0;
 
+//VARIAVEL PARA GUARDAR O TEMPO DO TIMER REPSONSAVEL PELO DISPLAY APENAS
+static int timer_display = TEMPO_DISPLAY;
+
 //VARIAVEL PARA GUARDAR O DELTAT ENTRE AS VARIAVEIS tempo E tempo_antigo ABAIXO
 static int delta = 0;
 static unsigned long tempo = 0;
 static unsigned long tempo_antigo = 0;
+static unsigned long tempo_antigo_display = 0;
+static int delta_display = 0;
 
 /*************************************************************/
 /*********************FUNÇÕES********************************/
@@ -62,8 +67,13 @@ void setup() {
     pinMode(keys[p], INPUT_PULLUP);
     pinMode(BUZZ, OUTPUT);
     digitalWrite(leds[p], HIGH);
-    digitalWrite(BUZZ, HIGH);
   }
+
+  pinMode(LATCH_DIO, OUTPUT);
+  pinMode(CLK_DIO, OUTPUT);
+  pinMode(DATA_DIO, OUTPUT);
+
+  digitalWrite(BUZZ, HIGH);
 
   //CHAMADA DA FUNÇÃO QUE INDICA O QUE QUEREMOS MONITORAR
   appinit();
@@ -78,6 +88,14 @@ void loop() {
   
   tempo = millis();                                 //TEMPO EM MILISSEGUNDOS
   delta = tempo - tempo_antigo;                     //VARIAÇÃO DE TEMPO
+  delta_display = tempo - tempo_antigo_display;
+
+  if(delta_display >= timer_display)
+  {
+    //Serial.println("AAAAAAAAAAAA");
+    timer_expired_display();
+    tempo_antigo_display = 0;
+  }
   
   if (delta >= timer)                               //CASO PASSE O VALOR DETERMINADO NA VARIÁVEL timer CHAMA A FUNÇÃO changeLed()
   {

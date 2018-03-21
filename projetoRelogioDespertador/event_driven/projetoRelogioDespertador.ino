@@ -11,7 +11,7 @@ struct relogio{
   byte minutos;                                   //VARIÁVEL PARA GUARDAR OS MINUTOS
   byte segundos;                                  //VARIÁVEL PARA GUARDAR OS SEGUNDOS
   boolean alarme_status;                          //VARIÁVEL PARA GUARDAR A SITUAÇÃO DO ALARME (ON OU OFF)
-  byte tipo_funcao;                               //VARIÁVEL PARA INDICAR QUAL FUNÇÃO ATUAL ((0)MUDAR RELOGIO - (1)RELOGIO - (2)ATIVAR/DESATIVAR ALARME - (3)MUDAR ALARME)
+  byte tipo_funcao;                               //VARIÁVEL PARA INDICAR QUAL FUNÇÃO ATUAL ((0)MUDAR RELOGIO - (1)RELOGIO)
 };typedef struct relogio Relogio;
 
 Relogio relogio_principal;
@@ -20,10 +20,20 @@ Relogio relogio_modificacao;
 boolean flag_modificacao = true;                             //(false) MUDAR HORA - (true) MUDAR MINUTO
 unsigned int tempo_key2 = 0;                                 //VARIAVEL PARA GUARDAR O TEMPO QUE A CHAVE 2 FOI PRESSIONADA
 
+const byte SEGMENT_MAP[] = {0xC0,0xF9,0xA4,0xB0,0x99,0x92,0x82,0xF8,0X80,0X90};   //BYTE MAP PARA NUMEROS DE 0 A 9
+const byte SEGMENT_SELECT[] = {0xF1,0xF2,0xF4,0xF8};                              //BYTE MAP PARA SELECIONAR O DISPLAY
 
 /*************************************************************/
 /*********************FUNÇÕES********************************/
 /*************************************************************/
+
+void EscreveNumeroNoDisplay(byte Segment, byte Value)
+{
+digitalWrite(LATCH_DIO,LOW);
+shiftOut(DATA_DIO, CLK_DIO, MSBFIRST, SEGMENT_MAP[Value]);
+shiftOut(DATA_DIO, CLK_DIO, MSBFIRST, SEGMENT_SELECT[Segment] );
+digitalWrite(LATCH_DIO,HIGH);
+}
 
 void buzzAviso()
 {
@@ -69,6 +79,14 @@ struct relogio logicaModificacao(struct relogio r, boolean tipo_modificacao)
   return r;
 }
 
+void mostraRelogioDisplay(struct relogio r)
+{
+  EscreveNumeroNoDisplay(3, r.minutos%10);
+  EscreveNumeroNoDisplay(2, r.minutos/10);
+  EscreveNumeroNoDisplay(1, r.hora%10);
+  EscreveNumeroNoDisplay(0, r.hora/10);
+}
+
 void printRelogio(struct relogio r)
 {
   Serial.print(r.hora);
@@ -105,7 +123,7 @@ void appinit(void)
   button_listen(KEY1);
   button_listen(KEY2);
   button_listen(KEY3);
-  timer_set(1000);
+  timer_set(10);
 
   relogio_principal = criarRelogio();  
 }
@@ -115,7 +133,7 @@ void button_changed(int p, int v)
   if(p == KEY1 and v == HIGH)
   {
     relogio_principal.tipo_funcao++;
-    if(relogio_principal.tipo_funcao == 4)
+    if(relogio_principal.tipo_funcao == 2)
       relogio_principal.tipo_funcao = 0;
     if(relogio_principal.tipo_funcao == 0) relogio_modificacao = relogio_principal;
   }
@@ -128,8 +146,8 @@ void button_changed(int p, int v)
       if(millis() - tempo_key2 >= 2000)
       {
         buzzAviso();
+        relogio_modificacao.tipo_funcao == 1;
         relogio_principal = relogio_modificacao;
-        relogio_principal.tipo_funcao == 1;
       }
     }
   }
@@ -146,18 +164,30 @@ void button_changed(int p, int v)
   } 
 }
 
+void timer_expired_display(void)
+{
+  if(relogio_principal.tipo_funcao == 0)
+    mostraRelogioDisplay(relogio_modificacao);
+  else
+    mostraRelogioDisplay(relogio_principal);
+}
+
 void timer_expired(void)
 {//FUNCAO RESPONSÁVEL POR REALIZAR A AÇÃO QUANDO O TIMER EXPIRAR
   if(relogio_principal.tipo_funcao == 1)
   {
     relogio_principal = logicaRelogioSoma(relogio_principal);
-    Serial.print("Principal:\t");
-    printRelogio(relogio_principal);
+    //Serial.print("Principal:\t");
+    //printRelogio(relogio_principal);
+    //mostraRelogioDisplay(relogio_principal);
   }
-  else if(relogio_principal.tipo_funcao == 0)
+  /*else if(relogio_principal.tipo_funcao == 0)
   {
-    Serial.print("Modificacao:\t");
-    printRelogio(relogio_modificacao);
+    //Serial.print("Modificacao:\t");
+    //printRelogio(relogio_modificacao);
+    mostraRelogioDisplay(relogio_modificacao);
   }
+  else
+    mostraRelogioDisplay(relogio_principal);*/
   
 }
