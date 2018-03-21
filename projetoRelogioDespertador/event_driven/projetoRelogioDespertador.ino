@@ -123,7 +123,7 @@ void appinit(void)
   button_listen(KEY1);
   button_listen(KEY2);
   button_listen(KEY3);
-  timer_set(10);
+  timer_set(1000);
 
   relogio_principal = criarRelogio();  
 }
@@ -174,20 +174,6 @@ void timer_expired_display(void)
 
 void timer_expired(void)
 {//FUNCAO RESPONSÁVEL POR REALIZAR A AÇÃO QUANDO O TIMER EXPIRAR
-  if(relogio_principal.tipo_funcao == 1)
-  {
-    relogio_principal = logicaRelogioSoma(relogio_principal);
-    //Serial.print("Principal:\t");
-    //printRelogio(relogio_principal);
-    //mostraRelogioDisplay(relogio_principal);
-  }
-  /*else if(relogio_principal.tipo_funcao == 0)
-  {
-    //Serial.print("Modificacao:\t");
-    //printRelogio(relogio_modificacao);
-    mostraRelogioDisplay(relogio_modificacao);
-  }
-  else
-    mostraRelogioDisplay(relogio_principal);*/
   
+  relogio_principal = logicaRelogioSoma(relogio_principal); 
 }
