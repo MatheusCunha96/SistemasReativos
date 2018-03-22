@@ -124,7 +124,7 @@ void appinit(void)
   button_listen(KEY1);
   button_listen(KEY2);
   button_listen(KEY3);
-  timer_set(10);
+  timer_set(1);
 
   relogio_principal = criarRelogio();  
 }
@@ -133,6 +133,7 @@ void button_changed(int p, int v)
 {//FUNÇÃO RESPONSÁVEL PELA AÇÃO CASO ALGUMA CHAVE SEJA ACIONADA
   if(p == KEY1 and v == HIGH)
   {
+    buzzAviso();
     relogio_principal.tipo_funcao++;
     if(relogio_principal.tipo_funcao == 2)
       relogio_principal.tipo_funcao = 0;
@@ -146,6 +147,8 @@ void button_changed(int p, int v)
       
       if(millis() - tempo_key2 >= 2000)
       {
+        buzzAviso();
+        delay(50);
         buzzAviso();
         relogio_modificacao.tipo_funcao == 1;
         relogio_principal = relogio_modificacao;
@@ -181,12 +184,9 @@ void timer_expired(void)
     mostraRelogioDisplay(relogio_modificacao);
   else
   {
-    if(count_timer >= 1)
+    if(count_timer >= 1000)
     {
-      digitalWrite(LED2,LOW);
-      relogio_principal = logicaRelogioSoma(relogio_principal); 
-      if(relogio_principal.minutos == 1)
-              digitalWrite(LED1,LOW);
+      relogio_principal = logicaRelogioSoma(relogio_principal);
       count_timer = 0;
     }
     mostraRelogioDisplay(relogio_principal);
