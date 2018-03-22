@@ -6,10 +6,14 @@
 /*********************VARIÁVEIS********************************/
 /*************************************************************/
 
+
 struct relogio{
   byte hora;                                      //VARIÁVEL PARA GUARDAR A HORA
   byte minutos;                                   //VARIÁVEL PARA GUARDAR OS MINUTOS
   byte segundos;                                  //VARIÁVEL PARA GUARDAR OS SEGUNDOS
+  byte hora_alarme;                               //VARIÁVEL PARA GUARDAR A HORA DO ALARME
+  byte minutos_alarme;                            //VARIÁVEL PARA GUARDAR OS MINUTOS DO ALARME
+  byte segundos_alarme;                           //VARIÁVEL PARA GUARDAR OS SEGUNDOS DO ALARME
   boolean alarme_status;                          //VARIÁVEL PARA GUARDAR A SITUAÇÃO DO ALARME (ON OU OFF)
   byte tipo_funcao;                               //VARIÁVEL PARA INDICAR QUAL FUNÇÃO ATUAL ((0)MUDAR RELOGIO - (1)RELOGIO)
 };typedef struct relogio Relogio;
@@ -96,6 +100,12 @@ void printRelogio(struct relogio r)
   Serial.print(":");
   Serial.print(r.segundos);
   Serial.print("\t");
+  Serial.print(r.hora_alarme);
+  Serial.print(":");
+  Serial.print(r.minutos_alarme);
+  Serial.print(":");
+  Serial.print(r.segundos_alarme);
+  Serial.print("\t");
   Serial.print("Alarme status:");
   Serial.print(r.alarme_status);
   Serial.print("\t");
@@ -113,6 +123,9 @@ struct relogio criarRelogio()
   novo_relogio.hora = 0;                     //INICIA RELOGIO EM 0 HORAS              
   novo_relogio.minutos = 0;                  //INICIA RELOGIO EM 0 MINUTOS
   novo_relogio.segundos = 0;                 //INICIA RELOGIO EM 0 SEGUNDOS
+  novo_relogio.hora_alarme = 0;              //INICIA ALARME EM 0 HORAS              
+  novo_relogio.minutos_alarme = 0;           //INICIA ALARME EM 0 MINUTOS
+  novo_relogio.segundos_alarme = 0;          //INICIA ALARME EM 0 SEGUNDOS
   novo_relogio.alarme_status = false;        //INICIA RELOGIO COM ALARME DESLIGADO
   novo_relogio.tipo_funcao = 0;              //INICIA RELOGIO NA FUNÇÃO RELOGIO
 
