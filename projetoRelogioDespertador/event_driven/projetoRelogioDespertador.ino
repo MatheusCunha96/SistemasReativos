@@ -71,9 +71,12 @@ struct relogio logicaRelogioSoma(struct relogio r)
 
 struct relogio logicaModificacao(struct relogio r, boolean tipo_modificacao)
 {
-
+  //ESSE IF ALTERA O ALARME DO RELOGIO
   if(relogio_principal.tipo_funcao == 2)
   {
+    r.minutos_alarme = 0;
+    r.hora_alarme = 0;
+    
     if(tipo_modificacao == true)
     {//MUDA MINUTO
       r.minutos_alarme++;
@@ -86,9 +89,8 @@ struct relogio logicaModificacao(struct relogio r, boolean tipo_modificacao)
        if(r.hora_alarme == 24)
          r.hora_alarme = 0;
     }
-    return r;
   }
-  
+
   if(tipo_modificacao == true)
   {//MUDA MINUTO
     r.minutos++;
@@ -101,7 +103,6 @@ struct relogio logicaModificacao(struct relogio r, boolean tipo_modificacao)
      if(r.hora == 24)
        r.hora = 0;
   }
-
   return r;
 }
 
@@ -144,7 +145,7 @@ struct relogio criarRelogio()
   novo_relogio.hora = 0;                     //INICIA RELOGIO EM 0 HORAS              
   novo_relogio.minutos = 0;                  //INICIA RELOGIO EM 0 MINUTOS
   novo_relogio.segundos = 0;                 //INICIA RELOGIO EM 0 SEGUNDOS
-  novo_relogio.hora_alarme = 0;              //INICIA ALARME EM 0 HORAS              
+  novo_relogio.hora_alarme = 6;              //INICIA ALARME EM 0 HORAS              
   novo_relogio.minutos_alarme = 10;           //INICIA ALARME EM 0 MINUTOS
   novo_relogio.segundos_alarme = 0;          //INICIA ALARME EM 0 SEGUNDOS
   novo_relogio.alarme_status = false;        //INICIA RELOGIO COM ALARME DESLIGADO
@@ -162,33 +163,50 @@ void appinit(void)
 
   relogio_principal = criarRelogio();  
 }
+//BOTA O VALOR DO ALARME NO RELOGIO PRINCIPAL
+void set_alarme()
+{
+  relogio_principal.hora_alarme = relogio_modificacao.hora_alarme;
+  relogio_principal.minutos_alarme = relogio_modificacao.minutos_alarme;
+}
 
 void button_changed(int p, int v)
 {//FUNÇÃO RESPONSÁVEL PELA AÇÃO CASO ALGUMA CHAVE SEJA ACIONADA
   if(p == KEY1 and v == HIGH)
   {
     relogio_principal.tipo_funcao++;
-    if(relogio_principal.tipo_funcao == 2)
+    if(relogio_principal.tipo_funcao == 3)
       relogio_principal.tipo_funcao = 0;
-    if(relogio_principal.tipo_funcao == 0) 
+    if(relogio_principal.tipo_funcao == 0 || relogio_principal.tipo_funcao == 2) 
       relogio_modificacao = relogio_principal;
   }
   if(p == KEY2 and v == HIGH)
   {
-    if(relogio_principal.tipo_funcao == 0 || relogio_principal.tipo_funcao == 2)
-    {
+    if(relogio_principal.tipo_funcao == 0)
+    { 
       flag_modificacao = !flag_modificacao;
       
       if(millis() - tempo_key2 >= 2000)
       {
         buzzAviso();
-        relogio_modificacao.tipo_funcao == 1;
+        //relogio_modificacao.tipo_funcao = 1;
         relogio_principal = relogio_modificacao;
+      }
+    }
+    
+    if(relogio_principal.tipo_funcao == 2)
+    { 
+      flag_modificacao = !flag_modificacao;
+      if(millis() - tempo_key2 >= 2000)
+      {
+        buzzAviso();
+        relogio_principal.tipo_funcao = 1;
+        set_alarme();
       }
     }
   }
   if(p == KEY2 and v == LOW)
-    if(relogio_principal.tipo_funcao == 0)
+    if(relogio_principal.tipo_funcao == 0 || relogio_principal.tipo_funcao == 2)
       tempo_key2 = millis();
 
   if(p == KEY3 and v == HIGH)
@@ -237,19 +255,32 @@ void timer_expired(void)
   count_timer++;
 
   despertar_alarme();
-  
-  if(relogio_principal.tipo_funcao == 0)
+
+  //SE O LED3 ESTA LIGADO SIGNIFICA QUE ESTA MODIFICANDO O ALARME
+  Serial.print(relogio_principal.tipo_funcao);
+ 
+  if(relogio_principal.tipo_funcao == 2)
+  {
+    digitalWrite(LED3, LOW);  
+  }
+  else
+  {
+     digitalWrite(LED3, HIGH);
+  }
+
+  if(count_timer >= 1)
+  {
+    digitalWrite(LED2,LOW);
+    relogio_principal = logicaRelogioSoma(relogio_principal); 
+    if(relogio_principal.minutos == 1)
+      digitalWrite(LED1,LOW);
+    count_timer = 0;
+   }
+   
+  if(relogio_principal.tipo_funcao == 0 || relogio_principal.tipo_funcao == 2)
     mostraRelogioDisplay(relogio_modificacao);
   else
   {
-    if(count_timer >= 1)
-    {
-      digitalWrite(LED2,LOW);
-      relogio_principal = logicaRelogioSoma(relogio_principal); 
-      if(relogio_principal.minutos == 1)
-              digitalWrite(LED1,LOW);
-      count_timer = 0;
-    }
     mostraRelogioDisplay(relogio_principal);
   }
     
