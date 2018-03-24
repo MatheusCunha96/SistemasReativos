@@ -15,7 +15,7 @@ struct relogio{
   byte minutos_alarme;                            //VARIÁVEL PARA GUARDAR OS MINUTOS DO ALARME
   byte segundos_alarme;                           //VARIÁVEL PARA GUARDAR OS SEGUNDOS DO ALARME
   boolean alarme_status;                          //VARIÁVEL PARA GUARDAR A SITUAÇÃO DO ALARME (ON OU OFF)
-  byte tipo_funcao;                               //VARIÁVEL PARA INDICAR QUAL FUNÇÃO ATUAL ((0)MUDAR RELOGIO - (1)RELOGIO)
+  byte tipo_funcao;                               //VARIÁVEL PARA INDICAR QUAL FUNÇÃO ATUAL ((0)MUDAR RELOGIO - (1)RELOGIO - (2)SET ALARME)
 };typedef struct relogio Relogio;
 
 Relogio relogio_principal;
@@ -28,6 +28,9 @@ const byte SEGMENT_MAP[] = {0xC0,0xF9,0xA4,0xB0,0x99,0x92,0x82,0xF8,0X80,0X90}; 
 const byte SEGMENT_SELECT[] = {0xF1,0xF2,0xF4,0xF8};                              //BYTE MAP PARA SELECIONAR O DISPLAY
 
 volatile int count_timer = 0;
+int max_toque_beep = 20; // ESSA VARIAVEL DEFINE O TOTAL DE TEMPO QUE O DESPERTADOR IRA FICAR ATIVO
+int qtd_toque_beep = 20; // ESSA EH UMA VARIAVEL QUE AUXILIA O TOTAL DE TEMPO QUE O DESPERTADOR FICA ATIVADO
+
 /*************************************************************/
 /*********************FUNÇÕES********************************/
 /*************************************************************/
@@ -68,6 +71,24 @@ struct relogio logicaRelogioSoma(struct relogio r)
 
 struct relogio logicaModificacao(struct relogio r, boolean tipo_modificacao)
 {
+
+  if(relogio_principal.tipo_funcao == 2)
+  {
+    if(tipo_modificacao == true)
+    {//MUDA MINUTO
+      r.minutos_alarme++;
+      if(r.minutos_alarme == 60)
+        r.minutos_alarme = 0;
+    }
+    else
+    {//MUDA HORA
+       r.hora_alarme++;
+       if(r.hora_alarme == 24)
+         r.hora_alarme = 0;
+    }
+    return r;
+  }
+  
   if(tipo_modificacao == true)
   {//MUDA MINUTO
     r.minutos++;
@@ -124,7 +145,7 @@ struct relogio criarRelogio()
   novo_relogio.minutos = 0;                  //INICIA RELOGIO EM 0 MINUTOS
   novo_relogio.segundos = 0;                 //INICIA RELOGIO EM 0 SEGUNDOS
   novo_relogio.hora_alarme = 0;              //INICIA ALARME EM 0 HORAS              
-  novo_relogio.minutos_alarme = 0;           //INICIA ALARME EM 0 MINUTOS
+  novo_relogio.minutos_alarme = 10;           //INICIA ALARME EM 0 MINUTOS
   novo_relogio.segundos_alarme = 0;          //INICIA ALARME EM 0 SEGUNDOS
   novo_relogio.alarme_status = false;        //INICIA RELOGIO COM ALARME DESLIGADO
   novo_relogio.tipo_funcao = 0;              //INICIA RELOGIO NA FUNÇÃO RELOGIO
@@ -137,7 +158,7 @@ void appinit(void)
   button_listen(KEY1);
   button_listen(KEY2);
   button_listen(KEY3);
-  timer_set(1);
+  timer_set(10);
 
   relogio_principal = criarRelogio();  
 }
@@ -146,22 +167,20 @@ void button_changed(int p, int v)
 {//FUNÇÃO RESPONSÁVEL PELA AÇÃO CASO ALGUMA CHAVE SEJA ACIONADA
   if(p == KEY1 and v == HIGH)
   {
-    buzzAviso();
     relogio_principal.tipo_funcao++;
     if(relogio_principal.tipo_funcao == 2)
       relogio_principal.tipo_funcao = 0;
-    if(relogio_principal.tipo_funcao == 0) relogio_modificacao = relogio_principal;
+    if(relogio_principal.tipo_funcao == 0) 
+      relogio_modificacao = relogio_principal;
   }
   if(p == KEY2 and v == HIGH)
   {
-    if(relogio_principal.tipo_funcao == 0)
+    if(relogio_principal.tipo_funcao == 0 || relogio_principal.tipo_funcao == 2)
     {
       flag_modificacao = !flag_modificacao;
       
       if(millis() - tempo_key2 >= 2000)
       {
-        buzzAviso();
-        delay(50);
         buzzAviso();
         relogio_modificacao.tipo_funcao == 1;
         relogio_principal = relogio_modificacao;
@@ -178,7 +197,12 @@ void button_changed(int p, int v)
     {
       relogio_modificacao = logicaModificacao(relogio_modificacao, flag_modificacao);
     }
+    else if(relogio_principal.tipo_funcao == 2)
+    {
+      relogio_modificacao = logicaModificacao(relogio_modificacao, flag_modificacao);
+    }
   } 
+  
 }
 
 /*void timer_expired_display(void)
@@ -189,17 +213,41 @@ void button_changed(int p, int v)
     mostraRelogioDisplay(relogio_principal);
 }*/
 
+void toque_do_alame() //FUNCAO QUE LIGA O BEEP DO ALARME
+{
+  if(qtd_toque_beep < max_toque_beep)
+  {
+    buzzAviso();
+    qtd_toque_beep++;  
+  }
+}
+
+void despertar_alarme() //FUNCAO QUE DESPERTA O ALARME
+{
+  if((relogio_principal.hora == relogio_principal.hora_alarme && relogio_principal.minutos == relogio_principal.minutos_alarme) && relogio_principal.segundos == relogio_principal.segundos_alarme)
+  {
+    qtd_toque_beep = 0;
+  }
+  toque_do_alame();
+}
+
+
 void timer_expired(void)
 {//FUNCAO RESPONSÁVEL POR REALIZAR A AÇÃO QUANDO O TIMER EXPIRAR
   count_timer++;
 
+  despertar_alarme();
+  
   if(relogio_principal.tipo_funcao == 0)
     mostraRelogioDisplay(relogio_modificacao);
   else
   {
-    if(count_timer >= 1000)
+    if(count_timer >= 1)
     {
-      relogio_principal = logicaRelogioSoma(relogio_principal);
+      digitalWrite(LED2,LOW);
+      relogio_principal = logicaRelogioSoma(relogio_principal); 
+      if(relogio_principal.minutos == 1)
+              digitalWrite(LED1,LOW);
       count_timer = 0;
     }
     mostraRelogioDisplay(relogio_principal);
