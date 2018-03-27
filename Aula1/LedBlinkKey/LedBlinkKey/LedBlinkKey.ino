@@ -20,8 +20,8 @@ int leds[3] = {LED1, LED2, LED3};
 void setup() {
   //INICIALIZAÇÃO DA CHAVE E DO LED
   pinMode(KEY1, INPUT_PULLUP);
-  pinMode(KEY1, INPUT_PULLUP);
-  pinMode(KEY1, INPUT_PULLUP);
+  pinMode(KEY2, INPUT_PULLUP);
+  pinMode(KEY3, INPUT_PULLUP);
 
   for(int i=0; i<3; i++){
     pinMode(leds[i], OUTPUT);

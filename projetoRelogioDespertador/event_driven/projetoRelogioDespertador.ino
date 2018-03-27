@@ -154,6 +154,38 @@ struct relogio criarRelogio()
   return novo_relogio;
 }
 
+void acendeLeds()
+{
+  if(relogio_principal.tipo_funcao == 0)
+  {
+    digitalWrite(LED1,LOW);
+    digitalWrite(LED2,HIGH);
+    digitalWrite(LED3,HIGH);
+    digitalWrite(LED4,HIGH);
+  }
+  else if(relogio_principal.tipo_funcao == 1)
+  { 
+    digitalWrite(LED1,HIGH);
+    digitalWrite(LED2,HIGH);
+    digitalWrite(LED3,HIGH);
+    digitalWrite(LED4,HIGH);
+  }
+  else if(relogio_principal.tipo_funcao == 2)
+  { 
+    digitalWrite(LED1,HIGH);
+    digitalWrite(LED2,LOW);
+    digitalWrite(LED3,HIGH);
+    digitalWrite(LED4,HIGH);
+  }
+  else if(relogio_principal.tipo_funcao == 3)
+  { 
+    digitalWrite(LED1,HIGH);
+    digitalWrite(LED2,HIGH);
+    digitalWrite(LED3,LOW);
+    digitalWrite(LED4,HIGH);
+  }
+}
+
 void appinit(void)
 {//FUNÇÃO RESPONSÁVEL POR INDICAR QUAIS CHAVES QUEREM SER MONITORADAS E SETAR O TIMER
   button_listen(KEY1);
@@ -175,7 +207,16 @@ void button_changed(int p, int v)
   if(p == KEY1 and v == HIGH)
   {
     relogio_principal.tipo_funcao++;
+<<<<<<< HEAD
+<<<<<<< HEAD
+    acendeLeds();
+    if(relogio_principal.tipo_funcao == 4)
+=======
     if(relogio_principal.tipo_funcao == 3)
+>>>>>>> 3b14e7c67fb68492d7355fc6b8b5295e68943526
+=======
+    if(relogio_principal.tipo_funcao == 3)
+>>>>>>> 3b14e7c67fb68492d7355fc6b8b5295e68943526
       relogio_principal.tipo_funcao = 0;
     if(relogio_principal.tipo_funcao == 0 || relogio_principal.tipo_funcao == 2) 
       relogio_modificacao = relogio_principal;
@@ -193,6 +234,15 @@ void button_changed(int p, int v)
         relogio_principal = relogio_modificacao;
       }
     }
+<<<<<<< HEAD
+<<<<<<< HEAD
+    if(relogio_principal.tipo_funcao == 3)
+    {
+      relogio_principal.alarme_status = true;
+      digitalWrite(LED4,LOW); 
+=======
+=======
+>>>>>>> 3b14e7c67fb68492d7355fc6b8b5295e68943526
     
     if(relogio_principal.tipo_funcao == 2)
     { 
@@ -203,6 +253,10 @@ void button_changed(int p, int v)
         relogio_principal.tipo_funcao = 1;
         set_alarme();
       }
+<<<<<<< HEAD
+>>>>>>> 3b14e7c67fb68492d7355fc6b8b5295e68943526
+=======
+>>>>>>> 3b14e7c67fb68492d7355fc6b8b5295e68943526
     }
   }
   if(p == KEY2 and v == LOW)
@@ -214,6 +268,15 @@ void button_changed(int p, int v)
     if(relogio_principal.tipo_funcao == 0)
     {
       relogio_modificacao = logicaModificacao(relogio_modificacao, flag_modificacao);
+    } 
+    if(relogio_principal.tipo_funcao == 3)
+    {
+      relogio_principal.alarme_status = false;
+      digitalWrite(LED4,HIGH); 
+    }
+    else if(relogio_principal.tipo_funcao == 2)
+    {
+      relogio_modificacao = logicaModificacao(relogio_modificacao, flag_modificacao);
     }
     else if(relogio_principal.tipo_funcao == 2)
     {
@@ -223,6 +286,8 @@ void button_changed(int p, int v)
   
 }
 
+<<<<<<< HEAD
+=======
 /*void timer_expired_display(void)
 {
   if(relogio_principal.tipo_funcao == 0)
@@ -250,6 +315,10 @@ void despertar_alarme() //FUNCAO QUE DESPERTA O ALARME
 }
 
 
+<<<<<<< HEAD
+>>>>>>> 3b14e7c67fb68492d7355fc6b8b5295e68943526
+=======
+>>>>>>> 3b14e7c67fb68492d7355fc6b8b5295e68943526
 void timer_expired(void)
 {//FUNCAO RESPONSÁVEL POR REALIZAR A AÇÃO QUANDO O TIMER EXPIRAR
   count_timer++;
@@ -281,6 +350,17 @@ void timer_expired(void)
     mostraRelogioDisplay(relogio_modificacao);
   else
   {
+<<<<<<< HEAD
+<<<<<<< HEAD
+    if(count_timer >= 10)
+    {
+      relogio_principal = logicaRelogioSoma(relogio_principal);
+      count_timer = 0;
+    }
+=======
+>>>>>>> 3b14e7c67fb68492d7355fc6b8b5295e68943526
+=======
+>>>>>>> 3b14e7c67fb68492d7355fc6b8b5295e68943526
     mostraRelogioDisplay(relogio_principal);
   }
     

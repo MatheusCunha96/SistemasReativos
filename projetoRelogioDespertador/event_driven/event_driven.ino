@@ -3,7 +3,7 @@
 #include "pindefs.h"
 
 /*************************************************************/
-/*********************VARIÁVEIS********************************/
+/*********************VARIÁVEIS*******************************/
 /*************************************************************/
 
 //VETOR PARA SABER QUAIS CHAVES TEMOS INTERESSE EM MONITORAR
@@ -19,7 +19,7 @@ static int keys_status[3] = {0,0,0};
 static int old_keys_status[3] = {0,0,0};
 
 //VETOR PARA ACESSAR OS LEDS
-int leds[3] = {LED1, LED2, LED3};
+int leds[4] = {LED1, LED2, LED3, LED4};
 
 //VARIAVEL QUE GUARDA O TEMPO DO TIMER
 static int timer = 0;
@@ -58,17 +58,19 @@ void setup() {
 
   //LOOP DE INICIALIZAÇÃO DOS LEDS E CHAVES
   for(int p=0; p<3; p++)
+    pinMode(keys[p], INPUT_PULLUP);
+
+  for(int p=0; p<4; p++)
   {
     pinMode(leds[p], OUTPUT);
-    pinMode(keys[p], INPUT_PULLUP);
-    pinMode(BUZZ, OUTPUT);
     digitalWrite(leds[p], HIGH);
   }
-
+  
   pinMode(LATCH_DIO, OUTPUT);
   pinMode(CLK_DIO, OUTPUT);
   pinMode(DATA_DIO, OUTPUT);
 
+  pinMode(BUZZ, OUTPUT);
   digitalWrite(BUZZ, HIGH);
 
   //CHAMADA DA FUNÇÃO QUE INDICA O QUE QUEREMOS MONITORAR
