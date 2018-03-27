@@ -31,6 +31,8 @@ volatile int count_timer = 0;
 int max_toque_beep = 20; // ESSA VARIAVEL DEFINE O TOTAL DE TEMPO QUE O DESPERTADOR IRA FICAR ATIVO
 int qtd_toque_beep = 20; // ESSA EH UMA VARIAVEL QUE AUXILIA O TOTAL DE TEMPO QUE O DESPERTADOR FICA ATIVADO
 
+boolean alarme_ativado = false;
+
 /*************************************************************/
 /*********************FUNÇÕES********************************/
 /*************************************************************/
@@ -73,10 +75,7 @@ struct relogio logicaModificacao(struct relogio r, boolean tipo_modificacao)
 {
   //ESSE IF ALTERA O ALARME DO RELOGIO
   if(relogio_principal.tipo_funcao == 2)
-  {
-    r.minutos_alarme = 0;
-    r.hora_alarme = 0;
-    
+  {    
     if(tipo_modificacao == true)
     {//MUDA MINUTO
       r.minutos_alarme++;
@@ -90,53 +89,42 @@ struct relogio logicaModificacao(struct relogio r, boolean tipo_modificacao)
          r.hora_alarme = 0;
     }
   }
-
-  if(tipo_modificacao == true)
-  {//MUDA MINUTO
-    r.minutos++;
-    if(r.minutos == 60)
-      r.minutos = 0;
-  }
   else
-  {//MUDA HORA
-     r.hora++;
-     if(r.hora == 24)
-       r.hora = 0;
+  {
+    if(tipo_modificacao == true)
+    {//MUDA MINUTO
+      r.minutos++;
+      if(r.minutos == 60)
+        r.minutos = 0;
+    }
+    else
+    {//MUDA HORA
+       r.hora++;
+       if(r.hora == 24)
+         r.hora = 0;
+    }
   }
   return r;
 }
 
-void mostraRelogioDisplay(struct relogio r)
+void mostraRelogioDisplay(struct relogio r, boolean alarme)
 {
-  EscreveNumeroNoDisplay(3, r.minutos%10);
-  EscreveNumeroNoDisplay(2, r.minutos/10);
-  EscreveNumeroNoDisplay(1, r.hora%10);
-  EscreveNumeroNoDisplay(0, r.hora/10);
+  if(alarme == false)
+  {
+    EscreveNumeroNoDisplay(3, r.minutos%10);
+    EscreveNumeroNoDisplay(2, r.minutos/10);
+    EscreveNumeroNoDisplay(1, r.hora%10);
+    EscreveNumeroNoDisplay(0, r.hora/10);
+  }
+  else
+  {
+    EscreveNumeroNoDisplay(3, r.minutos_alarme%10);
+    EscreveNumeroNoDisplay(2, r.minutos_alarme/10);
+    EscreveNumeroNoDisplay(1, r.hora_alarme%10);
+    EscreveNumeroNoDisplay(0, r.hora_alarme/10);
+  }
 }
 
-void printRelogio(struct relogio r)
-{
-  Serial.print(r.hora);
-  Serial.print(":");
-  Serial.print(r.minutos);
-  Serial.print(":");
-  Serial.print(r.segundos);
-  Serial.print("\t");
-  Serial.print(r.hora_alarme);
-  Serial.print(":");
-  Serial.print(r.minutos_alarme);
-  Serial.print(":");
-  Serial.print(r.segundos_alarme);
-  Serial.print("\t");
-  Serial.print("Alarme status:");
-  Serial.print(r.alarme_status);
-  Serial.print("\t");
-  Serial.print("Tipo funcao:");
-  Serial.print(r.tipo_funcao);
-  Serial.print("\t");
-  Serial.print("Flag modificacao: ");
-  Serial.println(flag_modificacao);
-}
 
 struct relogio criarRelogio()
 {//FUNÇÃO PARA CRIAR UM RELOGIO INICIALIZANDO ELE COM OS VALORES DEFAULT
@@ -144,9 +132,9 @@ struct relogio criarRelogio()
 
   novo_relogio.hora = 0;                     //INICIA RELOGIO EM 0 HORAS              
   novo_relogio.minutos = 0;                  //INICIA RELOGIO EM 0 MINUTOS
-  novo_relogio.segundos = 0;                 //INICIA RELOGIO EM 0 SEGUNDOS
-  novo_relogio.hora_alarme = 6;              //INICIA ALARME EM 0 HORAS              
-  novo_relogio.minutos_alarme = 10;           //INICIA ALARME EM 0 MINUTOS
+  novo_relogio.segundos = 1;                 //INICIA RELOGIO EM 0 SEGUNDOS
+  novo_relogio.hora_alarme = 0;              //INICIA ALARME EM 0 HORAS              
+  novo_relogio.minutos_alarme = 0;           //INICIA ALARME EM 0 MINUTOS
   novo_relogio.segundos_alarme = 0;          //INICIA ALARME EM 0 SEGUNDOS
   novo_relogio.alarme_status = false;        //INICIA RELOGIO COM ALARME DESLIGADO
   novo_relogio.tipo_funcao = 0;              //INICIA RELOGIO NA FUNÇÃO RELOGIO
@@ -163,6 +151,7 @@ void appinit(void)
 
   relogio_principal = criarRelogio();  
 }
+
 //BOTA O VALOR DO ALARME NO RELOGIO PRINCIPAL
 void set_alarme()
 {
@@ -172,65 +161,83 @@ void set_alarme()
 
 void button_changed(int p, int v)
 {//FUNÇÃO RESPONSÁVEL PELA AÇÃO CASO ALGUMA CHAVE SEJA ACIONADA
+  
   if(p == KEY1 and v == HIGH)
-  {
-    relogio_principal.tipo_funcao++;
+  {//SE A CHAVE 1 É APERTADA, AO SOLTAR OCORRE ESSE IF
     
-    if(relogio_principal.tipo_funcao == 3)
+    relogio_principal.tipo_funcao++;                                                          //ANDA A FUNÇÃO QUE ESTA OCORRENDO
+    
+    if(relogio_principal.tipo_funcao == 3)                                                    //IF PARA VOLTAR PARA O INICIO DAS FUNÇÕES
       relogio_principal.tipo_funcao = 0;
-    if(relogio_principal.tipo_funcao == 0 || relogio_principal.tipo_funcao == 2) 
+      
+    if(relogio_principal.tipo_funcao == 2)                                                    //AO SAIR DA FUNÇÃO RELÓGIO, O RELOGIO DE MODIFICACAO RECEBE O PRINCIPAL
       relogio_modificacao = relogio_principal;
   }
-  if(p == KEY2 and v == HIGH)
-  {
-    if(relogio_principal.tipo_funcao == 0)
-    { 
-      flag_modificacao = !flag_modificacao;
+  
+  if(p == KEY2 and v == HIGH) 
+  {//SE A CHAVE 2 É APERTADA, AO SOLTAR OCORRE ESSE IF
+    
+    if(relogio_principal.tipo_funcao == 0)                                                    
+    {//SE A FUNÇÃO ESTIVER NA ZERO (MODIFICAR O RELOGIO)
       
-      if(millis() - tempo_key2 >= 2000)
-      {
-        buzzAviso();
-        //relogio_modificacao.tipo_funcao = 1;
-        relogio_principal = relogio_modificacao;
+      flag_modificacao = !flag_modificacao;                                                   //INVERTE A FLAG DE MODIFICACAO
+      
+      if(millis() - tempo_key2 >= 2000)        
+      {//SE OCORRER UM DELTA DE 2S ENTRE APERTAR E SOLTAR, ENTAO OCORRE ESSE IF
+        buzzAviso();                                                                          //AVISO DO BUZZ
+        relogio_modificacao.tipo_funcao = 1;                                                  //VOLTA PARA A FUNÇÃO UM (RELÓGIO)
+        relogio_principal = relogio_modificacao;                                              //RELOGIO PRINCIPAL RECEBE O QUE FOI MODIFICADO
       }
+      
     }
-    
-    if(relogio_principal.tipo_funcao == 3)
-      relogio_principal.alarme_status = true;
-    
-    if(relogio_principal.tipo_funcao == 2)
-    { 
-      flag_modificacao = !flag_modificacao;
-      if(millis() - tempo_key2 >= 2000)
-      {
-        buzzAviso();
-        relogio_principal.tipo_funcao = 1;
-        set_alarme();
+
+    else if(relogio_principal.tipo_funcao == 1)
+    {//SE A FUNÇÃO ESTIVER EM UM (RELOGIO)
+      relogio_principal.alarme_status = !relogio_principal.alarme_status;
+      digitalWrite(LED2, !relogio_principal.alarme_status);      
+    }
+        
+    else if(relogio_principal.tipo_funcao == 2)                                                    
+    {//SE A FUNÇÃO ESTIVER NA DOIS (MODIFICA ALARME)
+      
+      flag_modificacao = !flag_modificacao;                                                   //INVERTE A FLAG DE MODIFICACAO
+      
+      if(millis() - tempo_key2 >= 2000)                                                       
+      {//SE OCORRER UM DELTA DE 2S ENTRE APERTAR E SOLTAR, ENTAO OCORRE ESSE IF
+        buzzAviso();                                                                          //AVISO DO BUZZ
+        relogio_principal.tipo_funcao = 1;                                                    //VOLTA PARA A FUNÇÃO UM (RELÓGIO)
+        set_alarme();                                                                         //CHAMA A FUNÇÃO DE SETAR ALARME
       }
+      
     }
   }
+  
   if(p == KEY2 and v == LOW)
+  {//SE A CHAVE 2 ESTA SOLTA E É APERTADA
+    
     if(relogio_principal.tipo_funcao == 0 || relogio_principal.tipo_funcao == 2)
-      tempo_key2 = millis();
+    {//SE A FUNÇÃO FOR ZERO OU DOIS (MODIFICAR RELOGIO OU ALARME)
+      tempo_key2 = millis();                                                                  //PEGA O TEMPO QUE FOI APERTADA
+    }
+    
+  }
 
   if(p == KEY3 and v == HIGH)
-  {
+  {//SE A CHAVE 3 É APERTADA, AO SOLTAR OCORRE ESSE IF
     if(relogio_principal.tipo_funcao == 0)
-    {
-      relogio_modificacao = logicaModificacao(relogio_modificacao, flag_modificacao);
-    } 
-    if(relogio_principal.tipo_funcao == 3)
-    {
-      relogio_principal.alarme_status = false;
-      digitalWrite(LED4,HIGH); 
+    {//SE A FUNÇÃO FOR ZERO (MODIFICAR RELOGIO)
+      relogio_modificacao = logicaModificacao(relogio_modificacao, flag_modificacao);         //RELOGIO MODIFICACAO RECEBE O QUE ESTA SENDO ALTERADO
+    }
+    else if(relogio_principal.tipo_funcao == 1)
+    {//SE ESTIVER NO MODO RELÓGIO E O ALARME ESTIVER ATIVADO, DESLIGA O ALARME
+      if(alarme_ativado == true)
+      {
+        alarme_ativado = false;
+      }
     }
     else if(relogio_principal.tipo_funcao == 2)
-    {
-      relogio_modificacao = logicaModificacao(relogio_modificacao, flag_modificacao);
-    }
-    else if(relogio_principal.tipo_funcao == 2)
-    {
-      relogio_modificacao = logicaModificacao(relogio_modificacao, flag_modificacao);
+    {//SE A FUNÇÃO FOR DOIS (MODIFICAR ALARME)
+      relogio_modificacao = logicaModificacao(relogio_modificacao, flag_modificacao);         //RELOGIO MODIFICACAO RECEBE O QUE ESTA SENDO ALTERADO
     }
   }   
 }
@@ -246,11 +253,14 @@ void toque_do_alame() //FUNCAO QUE LIGA O BEEP DO ALARME
 
 void despertar_alarme() //FUNCAO QUE DESPERTA O ALARME
 {
-  if((relogio_principal.hora == relogio_principal.hora_alarme && relogio_principal.minutos == relogio_principal.minutos_alarme) && relogio_principal.segundos == relogio_principal.segundos_alarme)
-  {
-    qtd_toque_beep = 0;
-  }
-  toque_do_alame();
+  if((relogio_principal.hora == relogio_principal.hora_alarme && relogio_principal.minutos == relogio_principal.minutos_alarme && relogio_principal.segundos == relogio_principal.segundos_alarme))
+    alarme_ativado = true;
+  
+  if(alarme_ativado == true && relogio_principal.alarme_status == true)
+    digitalWrite(BUZZ, LOW);
+  else
+    digitalWrite(BUZZ, HIGH);
+  //toque_do_alame();
 }
 
 void timer_expired(void)
@@ -260,38 +270,25 @@ void timer_expired(void)
   despertar_alarme();
 
   //SE O LED3 ESTA LIGADO SIGNIFICA QUE ESTA MODIFICANDO O ALARME
-  Serial.print(relogio_principal.tipo_funcao);
+  //Serial.print(relogio_principal.tipo_funcao);
  
   if(relogio_principal.tipo_funcao == 2)
-  {
     digitalWrite(LED3, LOW);  
-  }
   else
-  {
      digitalWrite(LED3, HIGH);
-  }
 
   if(count_timer >= 1)
   {
-    digitalWrite(LED2,LOW);
     relogio_principal = logicaRelogioSoma(relogio_principal); 
-    if(relogio_principal.minutos == 1)
-      digitalWrite(LED1,LOW);
     count_timer = 0;
-   }
-   
-  if(relogio_principal.tipo_funcao == 0 || relogio_principal.tipo_funcao == 2)
-    mostraRelogioDisplay(relogio_modificacao);
-  else
-  {
-    if(count_timer >= 10)
-    {
-      relogio_principal = logicaRelogioSoma(relogio_principal);
-      count_timer = 0;
-    }
-    mostraRelogioDisplay(relogio_principal);
   }
-    
+   
+  if(relogio_principal.tipo_funcao == 0)
+    mostraRelogioDisplay(relogio_modificacao, false);
+  else if(relogio_principal.tipo_funcao == 2)
+    mostraRelogioDisplay(relogio_modificacao, true);
+  else
+    mostraRelogioDisplay(relogio_principal, false);  
 
   
   
