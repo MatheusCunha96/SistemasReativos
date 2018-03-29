@@ -99,6 +99,7 @@ void loop() {
     {
       keys_status[i] = digitalRead(keys[i]);        //LE O ESTADO ATUAL DA CHAVE
       if (keys_status[i] != old_keys_status[i]){    //CASO O ESTADO TENHA MUDADO CHAMA A FUNÇÃO button_changed()
+        delay(20);
         button_changed(keys[i], keys_status[i]);    //CHAMA A FUNÇÃO QUE REALIZA O QUE O USUÁRIO DEFINIU
       }
       old_keys_status[i] = keys_status[i];          //ATUALIZA O VALOR ANTIGO DA CHAVE

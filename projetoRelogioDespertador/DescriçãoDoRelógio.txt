@@ -1,0 +1,27 @@
+Projeto Relógio Despertador
+
+Funcionamento
+
+-> Existem 3 estados no relógio:
+	1. Relógio
+	2. Mudar alarme
+	3. Mudar relógio
+
+1. Relógio
+	
+	Esse é o estado onde o relógio aparece nos displays de 7 segmentos. Nele é possível ativar/desativar o alarme, apertando a KEY2 (S2-A2 na placa), que pode ser visualizado conforme o estado do LED4 (D1 na placa). O alarme dispara apenas quando o relógio esta nesse estado. Para parar o alarme é necessário apertar a KEY3 (S3-A3 na placa).
+	Nesse estado nenhum dos LEDs fica acesso (com excessão do LED4 (D1 na placa), que é exclusiva para saber se o alarme esta ativado).
+
+2. Mudar alarme
+
+	Esse é o estado onde é possível mudar o horário do alarme. É possível escolher se quer mudar a hora ou os minutos através da KEY2 (S2-A2 na placa). A KEY3 (S3-A3 na placa) tem a função de acrescentar a hora/minuto.
+	Para confirmar o alarme é preciso segurar a KEY2 (S2-A2 na placa) e a 	KEY1 (S1-A1 na placa), e soltar a KEY2 seguida da KEY1 com uma diferença menor que 500ms. Um sinal sonoro irá avisar confirmando o novo alarme e o estado do relógio voltará para Relógio automaticamente.
+	Para indicar que estamos nesse estado o LED2 (D3 na placa) fica acesso.
+
+3. Mudar relógio
+
+	Esse é o estado onde é possível mudar o horário do relógio. É possível escolher se quer mudar a hora ou os minutos através da KEY2 (S2-A2 na placa). A KEY3 (S3-A3 na placa) tem a função de acrescentar a hora/minuto.
+	Para confirmar o novo horário para o relógio é preciso segurar a KEY2 (S2-A2 na placa) e a KEY1 (S1-A1 na placa), e soltar a KEY2 seguida da KEY1 com uma diferença menor que 500ms. Um sinal sonoro irá avisar confirmando o novo horário e a estado do relógio voltará para Relógio automaticamente.
+	Para indicar que estamos nesse estado o LED1 (D4 na placa) fica acesso.
+
+OBS: Tanto para a mudança de alarme, quanto para a mudança do relógio o horário só vai para frente, caso seja necessário voltar é preciso ir até o final para voltar para o início.
