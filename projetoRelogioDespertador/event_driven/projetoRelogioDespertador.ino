@@ -23,6 +23,7 @@ Relogio relogio_modificacao;
 
 boolean flag_modificacao = true;                             //(false) MUDAR HORA - (true) MUDAR MINUTO
 unsigned int tempo_key2 = 0;                                 //VARIAVEL PARA GUARDAR O TEMPO QUE A CHAVE 2 FOI PRESSIONADA
+unsigned int tempo_key3 = 0;
 
 const byte SEGMENT_MAP[] = {0xC0,0xF9,0xA4,0xB0,0x99,0x92,0x82,0xF8,0X80,0X90};   //BYTE MAP PARA NUMEROS DE 0 A 9
 const byte SEGMENT_SELECT[] = {0xF1,0xF2,0xF4,0xF8};                              //BYTE MAP PARA SELECIONAR O DISPLAY
@@ -159,6 +160,11 @@ void set_alarme()
   relogio_principal.minutos_alarme = relogio_modificacao.minutos_alarme;
 }
 
+void set_soneca()
+{
+ relogio_principal.minutos_alarme = relogio_principal.minutos_alarme + 20;
+}
+
 void button_changed(int p, int v)
 {//FUNÇÃO RESPONSÁVEL PELA AÇÃO CASO ALGUMA CHAVE SEJA ACIONADA
   
@@ -234,12 +240,26 @@ void button_changed(int p, int v)
       {
         alarme_ativado = false;
       }
+      if(millis() - tempo_key3 >= 2000)                                                       
+      {//SE OCORRER UM DELTA DE 2S ENTRE APERTAR E SOLTAR, ENTAO OCORRE ESSE IF
+        buzzAviso();                                                                          //AVISO DO BUZZ
+        //relogio_principal.tipo_funcao = 1;                                                    //VOLTA PARA A FUNÇÃO UM (RELÓGIO)
+        set_soneca();                                                                         //CHAMA A FUNÇÃO DE SETAR ALARME
+      }
     }
     else if(relogio_principal.tipo_funcao == 2)
     {//SE A FUNÇÃO FOR DOIS (MODIFICAR ALARME)
+      
       relogio_modificacao = logicaModificacao(relogio_modificacao, flag_modificacao);         //RELOGIO MODIFICACAO RECEBE O QUE ESTA SENDO ALTERADO
     }
-  }   
+  }
+  else if(p == KEY3 and v == LOW)
+  {
+     if(relogio_principal.tipo_funcao == 1)
+      {
+        tempo_key3 = millis();                                                                  //PEGA O TEMPO QUE FOI APERTADA
+      } 
+  }
 }
 
 void toque_do_alame() //FUNCAO QUE LIGA O BEEP DO ALARME
