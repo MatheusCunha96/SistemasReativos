@@ -9,7 +9,7 @@ function new_player(x, y, r)
     radius = r,    
     score = 0,
     
-    dtMult_player = 650,
+    dtMult_player = 400,
     
     draw = function (self)      
             love.graphics.circle('fill', self.posx, self.posy, self.radius)
@@ -20,8 +20,8 @@ function new_player(x, y, r)
       
       if love.keyboard.isDown("down") then
         self.posy = self.posy + self.dtMult_player*dt
-        if self.posy >= 600 - self.radius then
-          self.posy = 600 - self.radius
+        if self.posy >= HEIGHT - self.radius then
+          self.posy = HEIGHT - self.radius
         end
       end
       if love.keyboard.isDown("up") then
@@ -32,8 +32,8 @@ function new_player(x, y, r)
       end
       if love.keyboard.isDown("right") then
         self.posx = self.posx + self.dtMult_player*dt
-        if self.posx >= 800 - self.radius then
-          self.posx = 800 - self.radius
+        if self.posx >= WIDTH - self.radius then
+          self.posx = WIDTH - self.radius
         end
       end
       if love.keyboard.isDown("left") then
@@ -55,7 +55,7 @@ function new_enemy(x, y, w, h)
    
   return {
     
-  spaceBetweenBlocks = 100,
+  spaceBetweenBlocks = WIDTH/6,
   dtMult_enemy = 250,
   
   posx = x, 
@@ -66,18 +66,18 @@ function new_enemy(x, y, w, h)
     
    draw = function (self)
           love.graphics.rectangle('fill', self.posx, self.posy, self.width, self.height)
-          love.graphics.rectangle('fill', self.width + self.spaceBetweenBlocks, self.posy, 750 - self.width, self.height)
+          love.graphics.rectangle('fill', self.width + self.spaceBetweenBlocks, self.posy, WIDTH - self.width, self.height)
     end,
     
    randomWidth = function (self)
-      self.width = math.random(0,350)
+      self.width = math.random(0,WIDTH/2)
    end,
     
    update = function (self, dt)
       
       self.posy = self.posy + self.dtMult_enemy*dt
       
-      if self.posy >= 600 then
+      if self.posy >= HEIGHT then
         self:randomWidth()
         self.posy = 0 - self.height
         self.score_flag = true
@@ -116,12 +116,21 @@ function love.keypressed(key)
 end
 
 function love.load()
-   
+  
+  WIDTH = 400
+  HEIGHT = 1000
+  
+  love.window.setMode(WIDTH,HEIGHT)
+  
   screen = 0 
-  player = new_player(405, 500, 10)
-  enemy_array = {new_enemy(0, 0, math.random(0,700), 30),
-                 new_enemy(0, -200, math.random(0,700), 30),
-                 new_enemy(0, -400, math.random(0,700), 30)}
+  player = new_player(WIDTH/2, HEIGHT-100, 10)
+  
+  enemy_array = {}
+  
+  for i=1, HEIGHT/250 do
+    enemy_array[i] = new_enemy(0, -250*i, math.random(0,WIDTH), 30)
+  
+  end
   
 end
 
@@ -142,15 +151,15 @@ function love.draw()
   
   if screen == 0 then  
     player:draw()
-    enemy_array[1]:draw()
-    enemy_array[2]:draw()
-    enemy_array[3]:draw()
+    for i =1, #enemy_array do
+      enemy_array[i]:draw()
+    end
     love.graphics.print("Score: ", 10, 10)
     love.graphics.print(tostring(player.score), 60, 10)
   elseif screen == 1 then
-    love.graphics.print("Score: ", 350, 300)
-    love.graphics.print(tostring(player.score), 400, 300)
-    love.graphics.print("Press P to play again", 325, 550)
+    love.graphics.print("Score: ", WIDTH/2 -40 , HEIGHT/2 - 100)
+    love.graphics.print(tostring(player.score), WIDTH/2 + 10, HEIGHT/2 - 100)
+    love.graphics.print("Press P to play again", WIDTH/2 - 75 , HEIGHT/2 + 100)
   
   end
   
