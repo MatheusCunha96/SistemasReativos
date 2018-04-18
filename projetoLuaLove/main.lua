@@ -1,18 +1,21 @@
 
-function new_player(x, y, r)
+function new_player(x, y)
 
   
   return {
     
+    kirby = love.graphics.newImage("kirby.png"),
     posx = x,
     posy = y, 
-    radius = r,    
+    kirby_width = love.graphics.newImage("kirby.png"):getWidth(), 
+    kirby_height = love.graphics.newImage("kirby.png"):getHeight(), 
     score = 0,
     
     dtMult_player = 400,
     
     draw = function (self)      
-            love.graphics.circle('fill', self.posx, self.posy, self.radius)
+            --love.graphics.circle('fill', self.posx, self.posy, self.radius)
+            love.graphics.draw(self.kirby, self.posx, self.posy)
     end,
    
     
@@ -20,26 +23,26 @@ function new_player(x, y, r)
       
       if love.keyboard.isDown("down") then
         self.posy = self.posy + self.dtMult_player*dt
-        if self.posy >= HEIGHT - self.radius then
-          self.posy = HEIGHT - self.radius
+        if self.posy >= HEIGHT - self.kirby_height then
+          self.posy = HEIGHT - self.kirby_height
         end
       end
       if love.keyboard.isDown("up") then
         self.posy = self.posy - self.dtMult_player*dt
-        if self.posy - self.radius <= 0 then
-          self.posy = 0 + self.radius
+        if self.posy <= 0 then
+          self.posy = 0
         end
       end
       if love.keyboard.isDown("right") then
         self.posx = self.posx + self.dtMult_player*dt
-        if self.posx >= WIDTH - self.radius then
-          self.posx = WIDTH - self.radius
+        if self.posx >= WIDTH - self.kirby_width then
+          self.posx = WIDTH - self.kirby_width
         end
       end
       if love.keyboard.isDown("left") then
         self.posx = self.posx - self.dtMult_player*dt
-        if self.posx - self.radius <= 0 then
-          self.posx = 0 + self.radius
+        if self.posx <= 0 then
+          self.posx = 0
         end
       end
       
@@ -55,18 +58,22 @@ function new_enemy(x, y, w, h)
    
   return {
     
+  cloud = love.graphics.newImage("enemy.png"),  
+    
   spaceBetweenBlocks = WIDTH/6,
   dtMult_enemy = 250,
   
   posx = x, 
   posy = y,
   width = w,
-  height = h,
+  height = love.graphics.newImage("enemy.png"):getHeight(),
   score_flag = true,
     
    draw = function (self)
-          love.graphics.rectangle('fill', self.posx, self.posy, self.width, self.height)
-          love.graphics.rectangle('fill', self.width + self.spaceBetweenBlocks, self.posy, WIDTH - self.width, self.height)
+          love.graphics.draw(self.cloud, self.posx - WIDTH + self.width, self.posy)
+          love.graphics.draw(self.cloud, self.posx + self.width + self.spaceBetweenBlocks, self.posy)
+          --love.graphics.rectangle('fill', self.posx, self.posy, self.width, self.height)
+          --love.graphics.rectangle('fill', self.width + self.spaceBetweenBlocks, self.posy, WIDTH - self.width, self.height)
     end,
     
    randomWidth = function (self)
@@ -88,13 +95,13 @@ function new_enemy(x, y, w, h)
     checkScoreOrCollision = function (self, _player)
     
       --score
-      if self.posy - self.height >=  _player.posy - _player.radius then
+      if self.posy - self.height >=  _player.posy - 2*_player.kirby_width then
         if self.score_flag == true then
           _player.score = _player.score + 1
           self.score_flag = false
         end
       --collision
-      elseif (_player.posy - _player.radius <= self.posy + self.height) and (_player.posx - _player.radius <= self.posx + self.width or _player.posx + _player.radius>= self.posx + self.width + self.spaceBetweenBlocks) then
+      elseif (_player.posy <= self.posy + self.height) and (_player.posx <= self.posx + self.width or _player.posx >= self.posx + self.width + self.spaceBetweenBlocks - _player.kirby_width ) then
         screen = 1
         
       end 
@@ -118,17 +125,20 @@ end
 function love.load()
   
   WIDTH = 400
-  HEIGHT = 1000
+  HEIGHT = 500
   
   love.window.setMode(WIDTH,HEIGHT)
   
   screen = 0 
-  player = new_player(WIDTH/2, HEIGHT-100, 10)
+  
+  background = love.graphics.newImage("background.png")
+  
+  player = new_player(WIDTH/2, HEIGHT-100)
   
   enemy_array = {}
   
   for i=1, HEIGHT/250 do
-    enemy_array[i] = new_enemy(0, -250*i, math.random(0,WIDTH), 30)
+    enemy_array[i] = new_enemy(0, -250*i, math.random(0,WIDTH/2), 30)
   
   end
   
@@ -148,7 +158,9 @@ end
 
 
 function love.draw()
-  
+    
+  love.graphics.draw(background, 0, 0)   
+    
   if screen == 0 then  
     player:draw()
     for i =1, #enemy_array do
