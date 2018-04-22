@@ -98,6 +98,7 @@ function new_enemy(x, y, w, h)
       if self.posy - self.height >=  _player.posy - 2*_player.kirby_width then
         if self.score_flag == true then
           _player.score = _player.score + 1
+          Walldt = Walldt + 0.001
           self.score_flag = false
         end
       --collision
@@ -131,6 +132,8 @@ function love.load()
   
   screen = 0 
   
+  Walldt = 0.01
+  
   background = love.graphics.newImage("background.png")
   
   player = new_player(WIDTH/2, HEIGHT-100)
@@ -146,11 +149,12 @@ end
 
 
 function love.update(dt)
+  
   if screen == 0 then
     player:keyDown(dt)
     
     for i =1, #enemy_array do
-      enemy_array[i]:update(dt)
+      enemy_array[i]:update(Walldt)
       enemy_array[i]:checkScoreOrCollision(player)
     end
   end
