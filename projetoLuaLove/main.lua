@@ -1,3 +1,5 @@
+-- Projeto Matheus Cunha e Victor Meira Pinto
+
 
 function new_player(x, y)
 
@@ -141,7 +143,7 @@ function love.load()
   enemy_array = {}
   
   for i=1, HEIGHT/250 do
-    enemy_array[i] = new_enemy(0, -250*i, math.random(0,WIDTH/2), 30)
+    enemy_array[i] = new_enemy(0, -250*i, math.random(0,5*WIDTH/6), 30)
   
   end
   
