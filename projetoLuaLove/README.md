@@ -1,5 +1,7 @@
-#Mini Projeto II - LOVE/Lua
+# Mini Projeto II - LOVE/Lua
 
-Membros:
+#### Membros:
+
 Matheus Cunha
+
 Victor Meira
