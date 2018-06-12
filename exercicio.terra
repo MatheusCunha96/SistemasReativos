@@ -1,0 +1,74 @@
+#include "/home/terra/TerraNG/terra/TerraNet.defs"
+
+pktype usrMsg from radioMsg with
+    var ushort distancia;
+end
+
+var ushort nodeId = getNodeId();
+var ushort voltagem = 0;
+var ushort menorDistancia = 10000;
+var ushort melhorVizinho = 0;
+var usrMsg sndData;
+var usrMsg recData;
+
+sndData.target = BROADCAST;
+sndData.source = nodeId;
+sndData.distancia = 0;
+
+par do
+    loop do
+        par/and do
+            emit REQ_VOLTS();
+            voltagem = await VOLTS;
+            if voltagem <= 990 or voltagem >= 1010 then
+                emit LED0(ON);
+                inc sndData.distancia;
+                emit SEND(sndData);
+                await SEND_DONE;
+            else
+                emit LED0(OFF);
+            end
+        with
+            await 30s;
+        end
+    end
+with
+    par do
+        loop do
+            recData = await RECEIVE;
+            if recData.distancia < menorDistancia then
+                menorDistancia = recData.distancia;
+                melhorVizinho = recData.source;
+                qPut(recData);
+            end
+        end
+    with
+        loop do
+            await Q_READY;
+            loop do
+                if qSize() == 0 then
+                    break;
+                end
+                qGet(recData);
+                emit LED2(ON);
+                await 2s;
+                inc recData.distancia;
+                recData.source = nodeId;
+                emit SEND(recData);
+                await SEND_DONE;
+                emit LED2(OFF);
+            end
+        end
+    end
+with
+    loop do
+        var ubyte dezena = melhorVizinho/10;
+        var ubyte unidade = melhorVizinho%10;
+        emit LEDS(dezena);
+        await 2s;
+        emit LEDS(unidade);
+        await 2s;
+        emit LEDS(OFF);
+        await 2s;
+    end
+end
